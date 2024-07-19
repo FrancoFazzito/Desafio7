@@ -52,7 +52,7 @@ pipeline {
         stage('Run Playbook') {
             steps {
                 sh """
-                ansible-playbook -i ~/${env.INVENTORY} ~/ansible/playbook/playbook.yml
+                ansible-playbook -i ~/${env.INVENTORY} ~/ansible/playbook/playbook.yml --ssh-extra-args='-o StrictHostKeyChecking=no'
                 """
             }
         }
