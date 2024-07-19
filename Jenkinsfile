@@ -1,9 +1,10 @@
 pipeline {
     agent { label 'ansible-controller' }
     environment {
-        ANSIBLE_PRIVATE_KEY=credentials('ansible-jenkins-key') 
+        ANSIBLE_PRIVATE_KEY = credentials('ansible-jenkins-key')
     }
-    stage('Preparation') {
+    stages {
+        stage('Preparation') {
             steps {
                 script {
                     // Definir el entorno en función de la branch
@@ -23,8 +24,9 @@ pipeline {
         stage('Run Playbook') {
             steps {
                 script {
-                        sh 'ansible-playbook -i ${env.INVENTORY} playbook.yml --private-key=$ANSIBLE_PRIVATE_KEY'
+                    sh 'ansible-playbook -i ${env.INVENTORY} playbook.yml --private-key=$ANSIBLE_PRIVATE_KEY'
                 }
             }
         }
+    }
 }
