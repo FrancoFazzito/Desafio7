@@ -18,11 +18,11 @@ pipeline {
                 script {
                     // Definir el entorno en función de la branch
                     if (env.BRANCH_NAME == 'dev') {
-                        env.INVENTORY = 'ansible/inventories/dev/hosts.ini'
+                        env.INVENTORY = 'ansible/inventories/dev/host.ini'
                     } else if (env.BRANCH_NAME == 'staging') {
-                        env.INVENTORY = 'ansible/inventories/staging/hosts.ini'
+                        env.INVENTORY = 'ansible/inventories/staging/host.ini'
                     } else if (env.BRANCH_NAME == 'main') {
-                        env.INVENTORY = 'ansible/inventories/main/hosts.ini'
+                        env.INVENTORY = 'ansible/inventories/main/host.ini'
                     }
                 }
                 echo "Using inventory: ${env.INVENTORY}"
@@ -42,9 +42,9 @@ pipeline {
                     sh 'mkdir -p ~/ansible/inventories/main'
                     sh 'mkdir -p ~/ansible/playbook'
                     // Copiar los archivos necesarios al agente remoto
-                    sh 'cp ${WORKSPACE}/ansible/inventories/dev/hosts.ini ~/ansible/inventories/dev/'
-                    sh 'cp ${WORKSPACE}/ansible/inventories/staging/hosts.ini ~/ansible/inventories/staging/'
-                    sh 'cp ${WORKSPACE}/ansible/inventories/main/hosts.ini ~/ansible/inventories/main/'
+                    sh 'cp ${WORKSPACE}/ansible/inventories/dev/host.ini ~/ansible/inventories/dev/'
+                    sh 'cp ${WORKSPACE}/ansible/inventories/staging/host.ini ~/ansible/inventories/staging/'
+                    sh 'cp ${WORKSPACE}/ansible/inventories/main/host.ini ~/ansible/inventories/main/'
                     sh 'cp ${WORKSPACE}/ansible/playbook/playbook.yml ~/ansible/playbook/'
                 }
             }
