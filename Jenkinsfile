@@ -9,16 +9,21 @@ pipeline {
                 script {
                     // Definir el entorno en función de la branch
                     if (env.BRANCH_NAME == 'dev') {
-                        env.INVENTORY = '/path/to/ansible/inventories/dev/hosts'
+                        env.INVENTORY = 'inventories/dev/hosts.ini'
                     } else if (env.BRANCH_NAME == 'staging') {
-                        env.INVENTORY = '/path/to/ansible/inventories/staging/hosts'
+                        env.INVENTORY = 'inventories/staging/hosts.ini'
                     } else if (env.BRANCH_NAME == 'main') {
-                        env.INVENTORY = '/path/to/ansible/inventories/main/hosts'
+                        env.INVENTORY = 'inventories/main/hosts.ini'
                     } else {
                         error("Unknown branch: ${env.BRANCH_NAME}")
                     }
                 }
                 echo "Using inventory: ${env.INVENTORY}"
+            }
+        }
+        stage('Checkout') {
+            steps {
+                checkout scm
             }
         }
         stage('Run Playbook') {
