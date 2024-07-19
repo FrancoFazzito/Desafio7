@@ -37,7 +37,7 @@ pipeline {
         }
         stage('Run Playbook') {
             steps {
-                sshagent(credentials: ['ansible-ssh-key']) {
+                sshagent(credentials: ['ubuntu-key']) {
                     sh """
                     ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} << EOF
                     mkdir -p ~/ansible/inventories
