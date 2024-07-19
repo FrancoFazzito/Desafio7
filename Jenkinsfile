@@ -20,19 +20,10 @@ pipeline {
                 echo "Using inventory: ${env.INVENTORY}"
             }
         }
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
         stage('Run Playbook') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ansible-ssh-key', keyFileVariable: 'SSH_KEY')]) {
-                        sh """
-                        ansible-playbook -i ${env.INVENTORY} playbook.yml --private-key ${SSH_KEY}
-                        """
-                    }
+                        sh 'ansible-playbook -i ${env.INVENTORY} playbook.yml --private-key=$ANSIBLE_PRIVATE_KEY'
                 }
             }
         }
