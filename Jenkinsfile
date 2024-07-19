@@ -35,14 +35,18 @@ pipeline {
         }
         stage('Copy Files') {
             steps {
-                sh 'mkdir -p ~/ansible/inventories/dev'
-                sh 'mkdir -p ~/ansible/inventories/staging'
-                sh 'mkdir -p ~/ansible/inventories/main'
-                sh 'mkdir -p ~/ansible/playbook'
-                sh 'cp -r ${WORKSPACE}/inventories/dev/hosts.ini ~/ansible/inventories/dev/'
-                sh 'cp -r ${WORKSPACE}/inventories/staging/hosts.ini ~/ansible/inventories/staging/'
-                sh 'cp -r ${WORKSPACE}/inventories/main/hosts.ini ~/ansible/inventories/main/'
-                sh 'cp -r ${WORKSPACE}/playbook/playbook.yml ~/ansible/playbook/'
+                script {
+                    // Crear directorios en el agente remoto
+                    sh 'mkdir -p ~/ansible/inventories/dev'
+                    sh 'mkdir -p ~/ansible/inventories/staging'
+                    sh 'mkdir -p ~/ansible/inventories/main'
+                    sh 'mkdir -p ~/ansible/playbook'
+                    // Copiar los archivos necesarios al agente remoto
+                    sh 'cp ${WORKSPACE}/inventories/dev/hosts.ini ~/ansible/inventories/dev/'
+                    sh 'cp ${WORKSPACE}/inventories/staging/hosts.ini ~/ansible/inventories/staging/'
+                    sh 'cp ${WORKSPACE}/inventories/main/hosts.ini ~/ansible/inventories/main/'
+                    sh 'cp ${WORKSPACE}/playbook/playbook.yml ~/ansible/playbook/'
+                }
             }
         }
         stage('Run Playbook') {
