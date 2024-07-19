@@ -1,9 +1,18 @@
 pipeline {
-    agent { label 'ansible-controller' }
-    environment {
-        ANSIBLE_PRIVATE_KEY = credentials('ansible-jenkins-key')
+    agent {
+        label 'ansible'
     }
     stages {
+        stage('Print Environment Variables') {
+            steps {
+                script {
+                    // Imprimir todas las variables de entorno
+                    env.each { key, value ->
+                        echo "${key} = ${value}"
+                    }
+                }
+            }
+        }
         stage('Preparation') {
             steps {
                 script {
@@ -14,8 +23,6 @@ pipeline {
                         env.INVENTORY = 'inventories/staging/hosts.ini'
                     } else if (env.BRANCH_NAME == 'main') {
                         env.INVENTORY = 'inventories/main/hosts.ini'
-                    } else {
-                        error("Unknown branch: ${env.BRANCH_NAME}")
                     }
                 }
                 echo "Using inventory: ${env.INVENTORY}"
@@ -26,13 +33,23 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Copy Files') {
+            steps {
+                sh 'mkdir -p ~/ansible/inventories/dev'
+                sh 'mkdir -p ~/ansible/inventories/staging'
+                sh 'mkdir -p ~/ansible/inventories/main'
+                sh 'mkdir -p ~/ansible/playbook'
+                sh 'cp -r ${WORKSPACE}/inventories/dev/hosts.ini ~/ansible/inventories/dev/'
+                sh 'cp -r ${WORKSPACE}/inventories/staging/hosts.ini ~/ansible/inventories/staging/'
+                sh 'cp -r ${WORKSPACE}/inventories/main/hosts.ini ~/ansible/inventories/main/'
+                sh 'cp -r ${WORKSPACE}/playbook/playbook.yml ~/ansible/playbook/'
+            }
+        }
         stage('Run Playbook') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ansible-jenkins-key', keyFileVariable: 'SSH_KEY')]) {
-                    sh """
-                        ansible-playbook -i ${env.INVENTORY} playbook/playbook.yml --private-key=\${SSH_KEY}
-                    """
-                }
+                sh """
+                ansible-playbook -i ~/ansible/${env.INVENTORY} ~/ansible/playbook/playbook.yml
+                """
             }
         }
     }
