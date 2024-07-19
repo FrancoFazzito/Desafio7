@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'ansible'
+    }
     environment {
         ANSIBLE_HOST = "172.31.189.94"
         ANSIBLE_USER = "ubuntu"
@@ -37,17 +39,12 @@ pipeline {
         }
         stage('Run Playbook') {
             steps {
-                sshagent(credentials: ['ubuntu-key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} << EOF
-                    mkdir -p ~/ansible/inventories
-                    cp -r ${WORKSPACE}/inventories/* ~/ansible/inventories/
-                    ansible-playbook -i ~/ansible/${env.INVENTORY} ${WORKSPACE}/playbook.yml
-                    EOF
-                    """
-                }
+                sh """
+                mkdir -p ~/ansible/inventories
+                cp -r ${WORKSPACE}/inventories/* ~/ansible/inventories/
+                ansible-playbook -i ~/ansible/${env.INVENTORY} ${WORKSPACE}/playbook.yml
+                """
             }
         }
     }
 }
-
