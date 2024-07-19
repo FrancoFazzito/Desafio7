@@ -45,9 +45,7 @@ Desafio7/
 ├── ansible/
 │   ├── inventory/
 │   │   └── hosts            # Inventario de hosts
-│   ├── playbooks/
-│   │   └── main.yml         # Playbook principal
-│   └── roles/
-│       └── ...              # Roles de Ansible
+│   └── playbooks/
+│       └── main.yml         # Playbook principal
 ├── Jenkinsfile              # Pipeline de Jenkins
 └── README.md                # Documentación del proyecto
