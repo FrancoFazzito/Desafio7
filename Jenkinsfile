@@ -1,32 +1,20 @@
 pipeline {
-    agent {
-        label 'ansible'
-    }
+    agent { label 'ansible-controller' }
     environment {
-        ANSIBLE_HOST = "172.31.189.94"
-        ANSIBLE_USER = "ubuntu"
+        ANSIBLE_PRIVATE_KEY=credentials('ansible-jenkins-key') 
     }
-    stages {
-        stage('Print Environment Variables') {
-            steps {
-                script {
-                    // Imprimir todas las variables de entorno
-                    env.each { key, value ->
-                        echo "${key} = ${value}"
-                    }
-                }
-            }
-        }
-        stage('Preparation') {
+    stage('Preparation') {
             steps {
                 script {
                     // Definir el entorno en función de la branch
                     if (env.BRANCH_NAME == 'dev') {
-                        env.INVENTORY = 'inventories/dev/hosts'
+                        env.INVENTORY = '/path/to/ansible/inventories/dev/hosts'
                     } else if (env.BRANCH_NAME == 'staging') {
-                        env.INVENTORY = 'inventories/staging/hosts'
+                        env.INVENTORY = '/path/to/ansible/inventories/staging/hosts'
                     } else if (env.BRANCH_NAME == 'main') {
-                        env.INVENTORY = 'inventories/main/hosts'
+                        env.INVENTORY = '/path/to/ansible/inventories/main/hosts'
+                    } else {
+                        error("Unknown branch: ${env.BRANCH_NAME}")
                     }
                 }
                 echo "Using inventory: ${env.INVENTORY}"
@@ -39,12 +27,13 @@ pipeline {
         }
         stage('Run Playbook') {
             steps {
-                sh """
-                mkdir -p ~/ansible/inventories
-                cp -r ${WORKSPACE}/inventories/* ~/ansible/inventories/
-                ansible-playbook -i ~/ansible/${env.INVENTORY} ${WORKSPACE}/playbook.yml
-                """
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ansible-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+                        sh """
+                        ansible-playbook -i ${env.INVENTORY} playbook.yml --private-key ${SSH_KEY}
+                        """
+                    }
+                }
             }
         }
-    }
 }
