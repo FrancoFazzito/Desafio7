@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'ansible'
+        label 'ansible-controller'
     }
     stages {
         stage('Print Environment Variables') {
