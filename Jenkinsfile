@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    environment {
+        ANSIBLE_HOST = "172.31.189.94"
+        ANSIBLE_USER = "ubuntu"
+    }
     stages {
         stage('Print Environment Variables') {
             steps {
@@ -16,11 +20,11 @@ pipeline {
                 script {
                     // Definir el entorno en función de la branch
                     if (env.BRANCH_NAME == 'dev') {
-                        env.INVENTORY = '~/ansible/inventories/dev/hosts'
+                        env.INVENTORY = 'inventories/dev/hosts'
                     } else if (env.BRANCH_NAME == 'staging') {
-                        env.INVENTORY = '~/ansible/inventories/staging/hosts'
+                        env.INVENTORY = 'inventories/staging/hosts'
                     } else if (env.BRANCH_NAME == 'main') {
-                        env.INVENTORY = '~/ansible/inventories/main/hosts'
+                        env.INVENTORY = 'inventories/main/hosts'
                     }
                 }
                 echo "Using inventory: ${env.INVENTORY}"
@@ -33,14 +37,17 @@ pipeline {
         }
         stage('Run Playbook') {
             steps {
-                script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ansible-ssh-key', keyFileVariable: 'SSH_KEY')]) {
-                        sh """
-                        ansible-playbook -i ${env.INVENTORY} playbook.yml --private-key ${SSH_KEY}
-                        """
-                    }
+                sshagent(credentials: ['ansible-ssh-key']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} << EOF
+                    mkdir -p ~/ansible/inventories
+                    cp -r ${WORKSPACE}/inventories/* ~/ansible/inventories/
+                    ansible-playbook -i ~/ansible/${env.INVENTORY} ${WORKSPACE}/playbook.yml
+                    EOF
+                    """
                 }
             }
         }
     }
 }
+
