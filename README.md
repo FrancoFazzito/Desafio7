@@ -49,3 +49,29 @@ Desafio7/
 │       └── main.yml         # Playbook principal
 ├── Jenkinsfile              # Pipeline de Jenkins
 └── README.md                # Documentación del proyecto
+```
+
+## Diagrama de alto nivel
+
+```mermaid
+graph TD
+    Developer -->|Trigger| RepoPlaybook
+    RepoPlaybook -->|Fetch| Jenkinsfile
+    Jenkinsfile -->|Load| Jenkins
+    Jenkins -->|Run| AnsibleAgent
+    AnsibleAgent -->|Deploy| DevNode
+    AnsibleAgent -->|Deploy| StagingNode
+    AnsibleAgent -->|Deploy| ProdNode
+
+    classDef repoPlaybook fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef ansibleAgent fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef devNode fill:#bfb,stroke:#333,stroke-width:2px;
+    classDef stagingNode fill:#bfb,stroke:#333,stroke-width:2px;
+    classDef prodNode fill:#bfb,stroke:#333,stroke-width:2px;
+
+    RepoPlaybook:::repoPlaybook
+    AnsibleAgent:::ansibleAgent
+    DevNode:::devNode
+    StagingNode:::stagingNode
+    ProdNode:::prodNode
+```
