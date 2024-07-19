@@ -1,8 +1,6 @@
 pipeline {
-    agent any
-    environment {
-        ANSIBLE_HOST = "172.31.189.94"
-        ANSIBLE_USER = "ubuntu"
+    agent {
+        label 'ansible-controller'
     }
     stages {
         stage('Print Environment Variables') {
@@ -20,11 +18,11 @@ pipeline {
                 script {
                     // Definir el entorno en función de la branch
                     if (env.BRANCH_NAME == 'dev') {
-                        env.INVENTORY = 'inventories/dev/hosts'
+                        env.INVENTORY = 'ansible/inventories/dev/host.ini'
                     } else if (env.BRANCH_NAME == 'staging') {
-                        env.INVENTORY = 'inventories/staging/hosts'
+                        env.INVENTORY = 'ansible/inventories/staging/host.ini'
                     } else if (env.BRANCH_NAME == 'main') {
-                        env.INVENTORY = 'inventories/main/hosts'
+                        env.INVENTORY = 'ansible/inventories/main/host.ini'
                     }
                 }
                 echo "Using inventory: ${env.INVENTORY}"
@@ -35,19 +33,28 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Copy Files') {
+            steps {
+                script {
+                    // Crear directorios en el agente remoto
+                    sh 'mkdir -p ~/ansible/inventories/dev'
+                    sh 'mkdir -p ~/ansible/inventories/staging'
+                    sh 'mkdir -p ~/ansible/inventories/main'
+                    sh 'mkdir -p ~/ansible/playbook'
+                    // Copiar los archivos necesarios al agente remoto
+                    sh 'cp ${WORKSPACE}/ansible/inventories/dev/host.ini ~/ansible/inventories/dev/'
+                    sh 'cp ${WORKSPACE}/ansible/inventories/staging/host.ini ~/ansible/inventories/staging/'
+                    sh 'cp ${WORKSPACE}/ansible/inventories/main/host.ini ~/ansible/inventories/main/'
+                    sh 'cp ${WORKSPACE}/ansible/playbook/playbook.yml ~/ansible/playbook/'
+                }
+            }
+        }
         stage('Run Playbook') {
             steps {
-                sshagent(credentials: ['ansible-ssh-key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} << EOF
-                    mkdir -p ~/ansible/inventories
-                    cp -r ${WORKSPACE}/inventories/* ~/ansible/inventories/
-                    ansible-playbook -i ~/ansible/${env.INVENTORY} ${WORKSPACE}/playbook.yml
-                    EOF
-                    """
-                }
+                sh """
+                ansible-playbook -i ~/${env.INVENTORY} ~/ansible/playbook/playbook.yml --ssh-extra-args='-o StrictHostKeyChecking=no'
+                """
             }
         }
     }
 }
-
